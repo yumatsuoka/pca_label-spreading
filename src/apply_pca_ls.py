@@ -15,14 +15,26 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_mldata
 from sklearn.decomposition import PCA
 
+import cifar10
 from ls import Label_spreading
 
-def get_pca_data(n_data, data_dim):
-    mnist = fetch_mldata('MNIST original')
-    n_train = 60000
-    data = mnist['data'].astype(np.float32)[:n_train] / 255.
-    label = mnist['target'].astype(np.int32)[:n_train]
+def get_pca_data(n_data, data_dim, dataset):
+    def mnist():
+        dataset = fetch_mldata('MNIST original')
+        n_train = 60000
+        data = dataset['data'].astype(np.float32)[:n_train] / 255.
+        label = dataset['target'].astype(np.int32)[:n_train]
+        return n_train, data, label
     
+    def cifar():
+        dataset = cifar10.load()
+        n_train = 50000
+        data = dataset['train']['data'].reshape((n_train, 32*32*3)) / 255.
+        label = dataset['train']['target']
+        return n_train, data, label
+    
+    get_data = (mnist)if(dataset == 'mnist')else(cifar)
+    n_train, data, label = get_data() 
     pca = PCA(n_components = data_dim)
     app_pca = pca.fit(data).transform(data)
     
@@ -39,10 +51,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_data', default=10000, type=int)
     parser.add_argument('--data_dim', default=2, type=int)
+    parser.add_argument('--dataset', default='mnist', type=str)
     args = parser.parse_args()
     
     print('pca+label-spreading')
-    train_data, train_target, test_data, test_target = get_pca_data(args.n_data, args.data_dim)
+    train_data, train_target, test_data, test_target = get_pca_data(args.n_data, args.data_dim, args.dataset)
     
     n_testlabel = len(test_target)
     array = np.concatenate((test_data, train_data), axis=0)
