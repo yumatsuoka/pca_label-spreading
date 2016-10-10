@@ -17,20 +17,21 @@ from sklearn.decomposition import PCA
 
 from ls import Label_spreading
 
-def get_pca_data(n_data, s_dim):
+def get_pca_data(n_data, data_dim):
     mnist = fetch_mldata('MNIST original')
     n_train = 60000
-    data = mnist['data'].astype(np.float32)[:n_train]
+    data = mnist['data'].astype(np.float32)[:n_train] / 255.
     label = mnist['target'].astype(np.int32)[:n_train]
-    #apply pca
-    pca = PCA(n_components = s_dim)
+    
+    pca = PCA(n_components = data_dim)
     app_pca = pca.fit(data).transform(data)
-    #
-    train_data = app_pca[:n_data].reshape((n_data, s_dim)) / 255.0
-    test_data = app_pca[n_data:].reshape((n_train-n_data, s_dim)) /255.0
-    print('train_data_dim:{}, test_data_dim{}'.format(train_data.shape, test_data.shape))
-    train_label = label[:n_data]
-    test_label = label[n_data:]
+    
+    perm = np.random.permutation(n_train)
+    train_data = app_pca[perm[:n_data]].reshape((n_data, data_dim))
+    test_data = app_pca[perm[n_data:]].reshape((n_train-n_data, data_dim))
+    print('train_data_dim:{}, val_data_dim{}'.format(train_data.shape, test_data.shape))
+    train_label = label[perm[:n_data]]
+    test_label = label[perm[n_data:]]
     return train_data, train_label, test_data, test_label
 
 if __name__ == '__main__':
