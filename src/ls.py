@@ -13,7 +13,7 @@ import sys
 import argparse
 import numpy as np
 from sklearn.semi_supervised import label_propagation
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 class Label_spreading:
